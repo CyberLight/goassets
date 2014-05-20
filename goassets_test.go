@@ -107,6 +107,37 @@ func TestGoassetsCssInclude(t *testing.T) {
 			utils.RemoveAll("static")
 		})
 	})
+
+	Convey("Given 1 css file", t, func(){
+		utils.RemoveAll("style1.css")
+		utils.CreateFiles("style%v.css", 1, t)
+		
+		Convey("When I set css file name to IncludeCss", func(){
+			cssAssetsHtml := goassets.NewGoAssets(jsAggregator, cssAggregator).IncludeCss("style1.css")
+			
+			Convey("Then I should get mapped Html rel link tags for one css file", func(){
+				arrayWithoutRightRn := strings.TrimRight(string(cssAssetsHtml), CrLf)
+				actualCssLines := strings.Split(arrayWithoutRightRn, CrLf)
+				matched, err := regexp.MatchString(CssTagRegexp, actualCssLines[0])
+				if err!=nil { t.Fatalf("Error %v", err) }
+
+				So(len(actualCssLines), ShouldEqual, 1)
+				So(true, ShouldEqual, matched)
+			})
+		})
+		
+		Reset(func(){
+			utils.RemoveAll("style1.css")
+		})
+	})
+
+	Convey("Given not exists assets folder or file name", t, func(){
+		Convey("When I set not exists folder or file name to IncludeCss", func(){
+			Convey("Then I should get error information", func(){
+				So(func(){ goassets.NewGoAssets(jsAggregator, cssAggregator).IncludeCss("NotExistsFolder") }, ShouldPanic)
+			})
+		})	
+	})
 }
 
 func TestGoassetsJsAggregator(t *testing.T) {
@@ -146,7 +177,6 @@ func TestGoassetsJsAggregator(t *testing.T) {
 
 func TestGoassetsAssetCssAggregator(t *testing.T) {
 	Convey("Given one css file", t, func(){
-		utils.RemoveAll("teststyle%v.css")
 		utils.CreateFiles("teststyle%v.css", 1, t)
 		Convey("When I try to aggregate css files with wrong regex", func(){
 			Convey("Then I should get error information", func(){
@@ -156,7 +186,7 @@ func TestGoassetsAssetCssAggregator(t *testing.T) {
 		})
 		
 		Reset(func(){
-			utils.RemoveAll("teststyle%v.css")
+			utils.RemoveAll("teststyle1.css")
 		})
 	})
 	
